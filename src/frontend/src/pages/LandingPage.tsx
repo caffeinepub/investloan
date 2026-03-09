@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock,
+  LayoutDashboard,
   Loader2,
   Shield,
   Star,
@@ -186,7 +187,7 @@ function Navbar({ onApplyClick }: { onApplyClick: () => void }) {
         </a>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6">
           <a
             href="#how-it-works"
             data-ocid="nav.link"
@@ -208,6 +209,17 @@ function Navbar({ onApplyClick }: { onApplyClick: () => void }) {
           >
             Testimonials
           </a>
+
+          {/* Admin link — outlined, clearly visible but secondary to Apply Now */}
+          <Link
+            to="/admin"
+            data-ocid="nav.admin.link"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg border border-border text-sm font-medium text-foreground hover:border-gold/60 hover:text-gold hover:bg-gold/5 transition-all"
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            Admin
+          </Link>
+
           <button
             type="button"
             onClick={onApplyClick}
@@ -216,12 +228,6 @@ function Navbar({ onApplyClick }: { onApplyClick: () => void }) {
           >
             Apply Now
           </button>
-          <Link
-            to="/admin"
-            className="text-xs text-muted-foreground hover:text-muted-foreground/70 transition-colors"
-          >
-            Admin
-          </Link>
         </div>
 
         {/* Mobile menu button */}
@@ -292,6 +298,18 @@ function Navbar({ onApplyClick }: { onApplyClick: () => void }) {
             >
               Testimonials
             </button>
+
+            {/* Admin link in mobile menu */}
+            <Link
+              to="/admin"
+              data-ocid="nav.admin.link"
+              onClick={() => setMenuOpen(false)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:border-gold/60 hover:text-gold hover:bg-gold/5 transition-all"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              Admin Dashboard
+            </Link>
+
             <button
               type="button"
               onClick={() => {
