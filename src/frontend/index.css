@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================
+   FONT FACES — self-hosted woff2 only
+   ========================================= */
+
+@font-face {
+  font-family: "Fraunces";
+  src: url("/assets/fonts/Fraunces.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sora";
+  src: url("/assets/fonts/Sora.woff2") format("woff2");
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =========================================
+   DESIGN TOKENS — OKLCH raw L C H values
+   ========================================= */
+
+@layer base {
+  :root {
+    --radius: 0.75rem;
+
+    /* Surface */
+    --background: 0.12 0.018 165;
+    --foreground: 0.95 0.01 90;
+
+    /* Card / Popover */
+    --card: 0.15 0.022 165;
+    --card-foreground: 0.95 0.01 90;
+    --popover: 0.17 0.024 165;
+    --popover-foreground: 0.95 0.01 90;
+
+    /* Primary — champagne gold */
+    --primary: 0.78 0.12 85;
+    --primary-foreground: 0.12 0.018 165;
+
+    /* Secondary — muted green-teal */
+    --secondary: 0.22 0.03 165;
+    --secondary-foreground: 0.85 0.02 90;
+
+    /* Muted */
+    --muted: 0.19 0.025 165;
+    --muted-foreground: 0.65 0.02 165;
+
+    /* Accent — lighter gold */
+    --accent: 0.25 0.035 165;
+    --accent-foreground: 0.92 0.05 85;
+
+    /* Destructive */
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 0.985 0 0;
+
+    /* Structural */
+    --border: 0.25 0.03 165;
+    --input: 0.22 0.028 165;
+    --ring: 0.78 0.12 85;
+
+    /* Charts */
+    --chart-1: 0.78 0.12 85;
+    --chart-2: 0.6 0.118 184.704;
+    --chart-3: 0.398 0.07 227.392;
+    --chart-4: 0.828 0.189 84.429;
+    --chart-5: 0.769 0.188 70.08;
+
+    /* Sidebar */
+    --sidebar: 0.13 0.02 165;
+    --sidebar-foreground: 0.95 0.01 90;
+    --sidebar-primary: 0.78 0.12 85;
+    --sidebar-primary-foreground: 0.12 0.018 165;
+    --sidebar-accent: 0.22 0.03 165;
+    --sidebar-accent-foreground: 0.95 0.01 90;
+    --sidebar-border: 0.25 0.03 165;
+    --sidebar-ring: 0.78 0.12 85;
+
+    /* Brand custom tokens */
+    --gold: 0.78 0.12 85;
+    --gold-light: 0.88 0.1 85;
+    --green-deep: 0.18 0.06 165;
+    --green-mid: 0.32 0.1 160;
+    --green-bright: 0.55 0.18 155;
+    --surface-glow: 0.20 0.035 165;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* =========================================
+   CUSTOM UTILITIES
+   ========================================= */
+@layer utilities {
+  .text-gold {
+    color: oklch(var(--gold));
+  }
+  .bg-gold {
+    background-color: oklch(var(--gold));
+  }
+  .bg-gold-light {
+    background-color: oklch(var(--gold-light));
+  }
+  .border-gold {
+    border-color: oklch(var(--gold));
+  }
+  .bg-green-deep {
+    background-color: oklch(var(--green-deep));
+  }
+  .bg-surface-glow {
+    background-color: oklch(var(--surface-glow));
+  }
+  .text-green-bright {
+    color: oklch(var(--green-bright));
+  }
+  .bg-green-mid {
+    background-color: oklch(var(--green-mid));
+  }
+
+  .gradient-hero {
+    background: linear-gradient(
+      135deg,
+      oklch(0.08 0.03 165) 0%,
+      oklch(0.14 0.05 165) 40%,
+      oklch(0.11 0.04 180) 100%
+    );
+  }
+
+  .gradient-card {
+    background: linear-gradient(
+      145deg,
+      oklch(0.17 0.028 165) 0%,
+      oklch(0.14 0.022 165) 100%
+    );
+  }
+
+  .gold-shimmer {
+    background: linear-gradient(
+      105deg,
+      oklch(0.78 0.12 85) 0%,
+      oklch(0.88 0.1 85) 50%,
+      oklch(0.78 0.12 85) 100%
+    );
+    background-size: 200% auto;
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(
+      105deg,
+      oklch(0.88 0.1 85),
+      oklch(0.72 0.14 75),
+      oklch(0.88 0.08 90)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .noise-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .card-hover {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px oklch(0 0 0 / 40%), 0 0 0 1px oklch(0.78 0.12 85 / 30%);
+    border-color: oklch(0.78 0.12 85 / 50%);
+  }
+}
