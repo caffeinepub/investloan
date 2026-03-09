@@ -39,6 +39,15 @@ actor {
 
   let userProfiles = Map.empty<Principal, UserProfile>();
 
+  // Claim admin if no admin has been assigned yet (first-login flow)
+  public shared ({ caller }) func claimAdminIfFirst() : async Bool {
+    if (caller.isAnonymous()) { return false };
+    if (accessControlState.adminAssigned) { return false };
+    accessControlState.userRoles.add(caller, #admin);
+    accessControlState.adminAssigned := true;
+    true;
+  };
+
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can access profiles");

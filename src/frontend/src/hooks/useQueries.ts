@@ -113,3 +113,18 @@ export function useClaimAdmin() {
     },
   });
 }
+
+export function useClaimAdminIfFirst() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (): Promise<boolean> => {
+      if (!actor) throw new Error("Not connected");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (actor as any).claimAdminIfFirst() as Promise<boolean>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["isCallerAdmin"] });
+    },
+  });
+}

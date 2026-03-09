@@ -23,6 +23,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInternetIdentity } from "@/hooks/useInternetIdentity";
 import {
+  useClaimAdminIfFirst,
   useDeleteApplication,
   useGetApplications,
   useIsCallerAdmin,
@@ -34,7 +35,6 @@ import {
   AlertCircle,
   ArrowLeft,
   CheckCircle2,
-  Copy,
   Loader2,
   LogIn,
   LogOut,
@@ -46,6 +46,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { useEffect, useRef } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { LoanApplication } from "../backend.d";
@@ -145,74 +146,25 @@ function LoginPrompt() {
   );
 }
 
-/* ─── Share Principal ID (not yet admin) ─── */
-function ClaimAdmin() {
-  const { clear, identity } = useInternetIdentity();
-  const [copied, setCopied] = useState(false);
-
-  const principal = identity?.getPrincipal().toString() ?? "";
-
-  function handleCopy() {
-    if (!principal) return;
-    void navigator.clipboard.writeText(principal).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }
+/* ─── Access denied (admin seat already taken) ─── */
+function AccessDenied() {
+  const { clear } = useInternetIdentity();
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="gradient-card border border-border rounded-3xl p-10 max-w-lg w-full text-center shadow-deep"
+        className="gradient-card border border-border rounded-3xl p-10 max-w-md w-full text-center shadow-deep"
       >
-        <div className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/30 flex items-center justify-center mx-auto mb-6">
-          <Shield className="w-8 h-8 text-gold" />
+        <div className="w-16 h-16 rounded-2xl bg-destructive/10 border border-destructive/30 flex items-center justify-center mx-auto mb-6">
+          <XCircle className="w-8 h-8 text-destructive" />
         </div>
-        <h1 className="font-display text-2xl font-black mb-3">
-          Admin Access Required
-        </h1>
+        <h1 className="font-display text-2xl font-black mb-3">Access Denied</h1>
         <p className="text-muted-foreground text-sm mb-8 leading-relaxed">
-          Your account has not been granted admin access yet. Share your
-          Principal ID with the site owner to get access.
+          The admin seat for this site has already been claimed by another
+          account. Only one administrator is allowed.
         </p>
-
-        {/* Principal ID display */}
-        <div className="bg-card border border-gold/20 rounded-2xl p-5 mb-4 text-left">
-          <p className="text-xs font-semibold text-gold uppercase tracking-wider mb-3">
-            Your Principal ID
-          </p>
-          <div className="flex items-center gap-3">
-            <code className="flex-1 font-mono text-xs text-foreground/90 break-all leading-relaxed bg-background/60 rounded-xl px-3 py-2.5 border border-border select-all">
-              {principal || "Loading..."}
-            </code>
-            <Button
-              data-ocid="admin.copy.button"
-              size="sm"
-              variant="outline"
-              onClick={handleCopy}
-              disabled={!principal}
-              className={`shrink-0 h-10 w-10 p-0 rounded-xl transition-all duration-200 ${
-                copied
-                  ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-400"
-                  : "border-gold/40 text-gold hover:bg-gold/10 hover:border-gold/60"
-              }`}
-            >
-              {copied ? (
-                <CheckCircle2 className="w-4 h-4" />
-              ) : (
-                <Copy className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-        </div>
-
-        <p className="text-muted-foreground/70 text-xs mb-8 leading-relaxed px-2">
-          The site owner will grant you admin access once they have your ID.
-          After access is granted, refresh this page to enter the dashboard.
-        </p>
-
         <div className="flex flex-col gap-2">
           <Link to="/">
             <Button
@@ -229,6 +181,7 @@ function ClaimAdmin() {
             variant="ghost"
             size="sm"
             onClick={clear}
+            data-ocid="admin.secondary_button"
             className="text-muted-foreground hover:text-foreground"
           >
             <LogOut className="w-4 h-4 mr-2" />
@@ -810,6 +763,66 @@ function AdminDashboard() {
   );
 }
 
+/* ─── Auto-claim gate (logged in but not yet admin) ─── */
+function AutoClaimGate() {
+  const claimAdminIfFirst = useClaimAdminIfFirst();
+
+  const mutateRef = useRef(claimAdminIfFirst.mutate);
+  useEffect(() => {
+    mutateRef.current();
+  }, []);
+
+  if (claimAdminIfFirst.isPending || claimAdminIfFirst.isIdle) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div
+          data-ocid="admin.loading_state"
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="w-12 h-12 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+          <p className="text-muted-foreground text-sm">
+            Setting up admin access...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (claimAdminIfFirst.isError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <div data-ocid="admin.error_state" className="text-center">
+          <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+          <p className="text-muted-foreground text-sm">
+            Something went wrong. Please refresh and try again.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // data === false means admin seat is already taken
+  if (claimAdminIfFirst.data === false) {
+    return <AccessDenied />;
+  }
+
+  // data === true: admin was just claimed; query invalidation in the hook
+  // will trigger re-render of AdminPage which will now show AdminDashboard
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div
+        data-ocid="admin.loading_state"
+        className="flex flex-col items-center gap-4"
+      >
+        <div className="w-12 h-12 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+        <p className="text-muted-foreground text-sm">
+          Setting up admin access...
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /* ─────────────────────────── ADMIN PAGE ─────────────────────────── */
 export default function AdminPage() {
   const { identity, isInitializing } = useInternetIdentity();
@@ -854,9 +867,9 @@ export default function AdminPage() {
     );
   }
 
-  // Not an admin — show claim screen
+  // Not yet admin — automatically attempt to claim
   if (!isAdmin) {
-    return <ClaimAdmin />;
+    return <AutoClaimGate />;
   }
 
   // Admin dashboard
